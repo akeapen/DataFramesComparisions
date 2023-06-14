@@ -35,13 +35,13 @@ md""" ### Ingest CSV File
 """
 
 # ╔═╡ 8360e30d-9775-43f8-9f3d-ae637f26146d
-@benchmark pd.read_csv("dataset.csv")
+b_i_1 = @benchmark pd.read_csv("dataset.csv")
 
 # ╔═╡ be981e6f-77bb-4ea5-ad8b-df2679a02b9a
-@benchmark pl.read_csv("dataset.csv")
+b_i_2 = @benchmark pl.read_csv("dataset.csv")
 
 # ╔═╡ 70f7179e-8264-4b03-b420-6056137b1f35
-@benchmark CSV.read("dataset.csv", DataFrame)
+b_i_3 = @benchmark CSV.read("dataset.csv", DataFrame)
 
 # ╔═╡ b70b41fe-17e2-416a-86a4-ff424e82eb87
 begin
@@ -55,13 +55,13 @@ md""" ### Write to CSV File
 """
 
 # ╔═╡ 7eef3b74-67cd-4a5f-a3d4-c46f14b9c375
-@benchmark df_pd.to_csv("dataset_dummy_pandas.csv")
+b_w_1 = @benchmark df_pd.to_csv("dataset_dummy_pandas.csv")
 
 # ╔═╡ e1a31d97-4ce6-4210-9eab-266e126b81c5
-@benchmark df_pl.write_csv("dataset_dummy_polars.csv")
+b_w_2 = @benchmark df_pl.write_csv("dataset_dummy_polars.csv")
 
 # ╔═╡ 4cb70ec5-0f63-435c-950a-2c07268df674
-@benchmark CSV.write("dataset_dummy_julia.csv", df_jl)
+b_w_3 = @benchmark CSV.write("dataset_dummy_julia.csv", df_jl)
 
 # ╔═╡ 8237abd1-2e50-44cb-b6ce-669e82bea126
 md""" ### Memory Allocation
@@ -73,13 +73,13 @@ md""" Estimation of the total (heap) allocated size of the DataFrame
 
 # ╔═╡ 7354b274-4f98-4be1-98e5-b07c30595329
 # df_pd.info(memory_usage="deep")
-df_pd.memory_usage(deep=true).sum() * 1e-9 # GB
+m_1 = df_pd.memory_usage(deep=true).sum() * 1e-9 # GB
 
 # ╔═╡ cd590e5d-48bc-4a16-ba56-93a4081c964f
-df_pl.estimated_size("gb") # GB
+m_2 = df_pl.estimated_size("gb") # GB
 
 # ╔═╡ 9f144c7c-1afd-44d0-8643-3c7a5034f053
-Base.summarysize(df_jl) * 1e-9 # GB
+m_3 = Base.summarysize(df_jl) * 1e-9 # GB
 
 # ╔═╡ 4b18a08c-2286-440f-804b-cccc904228e8
 md""" ### Selecting Columns
@@ -87,52 +87,72 @@ md""" ### Selecting Columns
 
 # ╔═╡ bbb0a3b0-1a5c-4c9e-a68c-89b6e7d36604
 # df_pd.columns
-@benchmark get(df_pd, py"['Name', 'Employee_Rating']")
+b_c_1 = @benchmark get(df_pd, py"['Name', 'Employee_Rating']")
 
 # ╔═╡ 16038a29-6a65-40c6-9555-4eb6973348f4
-@benchmark get(df_pl, py"['Name', 'Employee_Rating']")
+b_c_2 = @benchmark get(df_pl, py"['Name', 'Employee_Rating']")
 
 # ╔═╡ dbd69695-84a6-4cf5-94a9-e06ce546c7e2
-@benchmark df_jl[!,[:Name,:Employee_Rating]]
+b_c_3 = @benchmark df_jl[!,[:Name,:Employee_Rating]]
 
 # ╔═╡ 22152a33-e19a-4718-88fb-d48e006853aa
 md""" ### Filtering
 """
 
 # ╔═╡ bdce368d-4277-4aaf-beeb-3f99a22d65fd
-@benchmark get(df_pd, df_pd.Credits>2)
+b_f_1 = @benchmark get(df_pd, df_pd.Credits>2)
 
 # ╔═╡ 6fd84710-e40e-42c9-9515-72b1c413c0f4
-@benchmark df_pl.filter(pl.col("Credits") > 2)
+b_f_2 = @benchmark df_pl.filter(pl.col("Credits") > 2)
 
 # ╔═╡ de0f17bb-8510-451b-ba26-e8f3a0cceaf0
-@benchmark filter([:Credits] => (x) -> x .> 2, df_jl)
+b_f_3 = @benchmark filter([:Credits] => (x) -> x .> 2, df_jl)
 
 # ╔═╡ 7c1a8f64-0304-41a4-86d8-cc5b9633d6df
 md""" ### Grouping
 """
 
 # ╔═╡ 231d9db0-6b08-412d-94f8-17e75e164393
-@benchmark df_pd.groupby("Company_Name").Employee_Salary.mean().reset_index()
+b_g_1 = @benchmark df_pd.groupby("Company_Name").Employee_Salary.mean().reset_index()
 
 # ╔═╡ e185aa68-66d5-4549-9f94-9622aee39960
-@benchmark df_pl.groupby("Company_Name").agg(pl.mean("Employee_Salary"))
+b_g_2 = @benchmark df_pl.groupby("Company_Name").agg(pl.mean("Employee_Salary"))
 
 # ╔═╡ 21b03cc4-56be-47c3-971f-a3d599fb50db
-@benchmark combine(groupby(df_jl, :Company_Name), [:Employee_Salary] .=> mean; renamecols=false)
+b_g_3 = @benchmark combine(groupby(df_jl, :Company_Name), [:Employee_Salary] .=> mean; renamecols=false)
 
 # ╔═╡ 38a41a9c-5740-4724-9199-e34d9ffe51c5
 md""" ### Sorting
 """
 
 # ╔═╡ 88820b7b-db6f-4023-93bc-6faf36e61509
-@benchmark df_pd.sort_values("Employee_Salary")
+b_s_1 = @benchmark df_pd.sort_values("Employee_Salary")
 
 # ╔═╡ 286f2c5f-22d0-4dd1-acc3-0d005c1be634
-@benchmark df_pl.sort("Employee_Salary")
+b_s_2 = @benchmark df_pl.sort("Employee_Salary")
 
 # ╔═╡ ef3942fa-214f-4527-ab65-6bec0df79403
-@benchmark sort!(df_jl, :Employee_Salary, rev=false)
+b_s_3 = @benchmark sort!(df_jl, :Employee_Salary, rev=false)
+
+# ╔═╡ 29331c71-bf08-4135-a0e2-74ec2da65ae5
+md""" ## Benchmark Results
+"""
+
+# ╔═╡ 5b430d7d-42ec-407b-a7d3-2a65cccc2db7
+r(x) = round(x; digits=1) 
+
+# ╔═╡ 5ef2b97b-4ff3-4d3e-8737-a089c58c304c
+md"""
+| DataFrames : $(size(df_jl)[1]) × $(size(df_jl)[2]) | Pandas v"$(pd.__version__)" | Polars v"$(pl.__version__)" | Julia $(VERSION) | (median rel. Pandas) |
+| :-------: | :----: | :----: | :---: | :---: |
+| CSV Ingestion | $(r(median(b_i_1.times)*1e-9)) sec | $(r(median(b_i_2.times)*1e-9)) sec | $(r(median(b_i_3.times)*1e-9)) sec | Julia $(r(median(b_i_1.times)/median(b_i_3.times)))x, Polars $(r(median(b_i_1.times)/median(b_i_2.times)))x faster |
+| Memory Utilization | $(r(m_1)) GB | $(r(m_2)) GB | $(r(m_3)) GB | Julia $(r(m_1/m_3))x, Polars $(r(m_1/m_2))x more memory efficient |
+| CSV Write | $(r(median(b_w_1.times)*1e-9)) sec | $(r(median(b_w_2.times)*1e-9)) sec | $(r(median(b_w_3.times)*1e-9)) sec | Julia $(r(median(b_w_1.times)/median(b_w_3.times)))x, Polars $(r(median(b_w_1.times)/median(b_w_2.times)))x faster |
+| Column Selection | $(r(median(b_c_1.times)*1e-6)) μsec | $(r(median(b_c_2.times)*1e-3)) msec | $(r(median(b_c_3.times)*1e0)) nsec | Julia $(r(median(b_c_1.times)/median(b_c_3.times)))x, Polars $(r(median(b_c_1.times)/median(b_c_2.times)))x faster |
+"""
+
+# ╔═╡ c32d9e3d-1ac8-48f2-8c9d-d363fecf5336
+b_c_3.times
 
 # ╔═╡ 00000000-0000-0000-0000-000000000001
 PLUTO_PROJECT_TOML_CONTENTS = """
@@ -614,7 +634,7 @@ version = "17.4.0+0"
 # ╠═be640384-0945-11ee-217a-35c78a2884e0
 # ╠═a226c07d-9625-41ee-b8f6-a946bd6c50b5
 # ╟─35aea64c-3805-413a-bdf0-f8e66cf9ef11
-# ╟─8b91d461-e46c-47a0-9e91-d65edc2d70eb
+# ╠═8b91d461-e46c-47a0-9e91-d65edc2d70eb
 # ╟─f3a042c4-86a9-4aac-9409-e3f59d1bd502
 # ╠═8360e30d-9775-43f8-9f3d-ae637f26146d
 # ╠═be981e6f-77bb-4ea5-ad8b-df2679a02b9a
@@ -645,5 +665,9 @@ version = "17.4.0+0"
 # ╠═88820b7b-db6f-4023-93bc-6faf36e61509
 # ╠═286f2c5f-22d0-4dd1-acc3-0d005c1be634
 # ╠═ef3942fa-214f-4527-ab65-6bec0df79403
+# ╟─29331c71-bf08-4135-a0e2-74ec2da65ae5
+# ╠═5ef2b97b-4ff3-4d3e-8737-a089c58c304c
+# ╠═5b430d7d-42ec-407b-a7d3-2a65cccc2db7
+# ╠═c32d9e3d-1ac8-48f2-8c9d-d363fecf5336
 # ╟─00000000-0000-0000-0000-000000000001
 # ╟─00000000-0000-0000-0000-000000000002
