@@ -11,6 +11,12 @@ using PyCall , PlutoUI, DataFrames, CSV, BenchmarkTools, JSON
 md""" ## Pandas, Polars, Julia DataFrame Benchmarks
 """
 
+# ╔═╡ d622c667-c9c1-4fc0-b6e1-1c447a25157b
+md"""  The motivation for this set of benchmarks was derived from an initial assessment by Awi Chawla demonstrating the performance gains of Polars over Pandas.  As Julia has become my go to for is the language of the future
+
+[data](https://drive.google.com/file/d/1sSugZwVWCSsep0-4Xi7peXCd5dvglm4a/view?usp=sharing)
+"""
+
 # ╔═╡ a226c07d-9625-41ee-b8f6-a946bd6c50b5
 if false
 	run(`$(PyCall.python) -m pip install --upgrade pip`)
@@ -632,6 +638,7 @@ version = "17.4.0+0"
 # ╔═╡ Cell order:
 # ╟─b12b2b13-caa1-426f-b80b-08886a10fddb
 # ╠═be640384-0945-11ee-217a-35c78a2884e0
+# ╠═d622c667-c9c1-4fc0-b6e1-1c447a25157b
 # ╠═a226c07d-9625-41ee-b8f6-a946bd6c50b5
 # ╟─35aea64c-3805-413a-bdf0-f8e66cf9ef11
 # ╠═8b91d461-e46c-47a0-9e91-d65edc2d70eb
