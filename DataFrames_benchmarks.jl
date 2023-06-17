@@ -17,6 +17,14 @@ md"""  The motivation for this set of benchmarks was derived from an initial ass
 [data](https://drive.google.com/file/d/1sSugZwVWCSsep0-4Xi7peXCd5dvglm4a/view?usp=sharing)
 """
 
+# ╔═╡ 91a33052-6ccf-4285-a027-66cbc1259f89
+html""" <style> main {
+     margin: 0 auto;
+     max-width: 1250px;
+     padding-left: max(30px, 13%);
+     padding-right: max(120px, 15%);
+} </style> """
+
 # ╔═╡ a226c07d-9625-41ee-b8f6-a946bd6c50b5
 if false
 	run(`$(PyCall.python) -m pip install --upgrade pip`)
@@ -79,7 +87,7 @@ md""" Estimation of the total (heap) allocated size of the DataFrame
 
 # ╔═╡ 7354b274-4f98-4be1-98e5-b07c30595329
 # df_pd.info(memory_usage="deep")
-m_1 = df_pd.memory_usage(deep=true).sum() * 1e-9 # GB
+m_1 = float(df_pd.memory_usage(deep=true).sum() * 1e-9)# GB
 
 # ╔═╡ cd590e5d-48bc-4a16-ba56-93a4081c964f
 m_2 = df_pl.estimated_size("gb") # GB
@@ -142,6 +150,7 @@ b_s_3 = @benchmark sort!(df_jl, :Employee_Salary, rev=false)
 
 # ╔═╡ 29331c71-bf08-4135-a0e2-74ec2da65ae5
 md""" ## Benchmark Results
+#### median statistic
 """
 
 # ╔═╡ 5b430d7d-42ec-407b-a7d3-2a65cccc2db7
@@ -149,12 +158,12 @@ r(x) = round(x; digits=1)
 
 # ╔═╡ 5ef2b97b-4ff3-4d3e-8737-a089c58c304c
 md"""
-| DataFrames : $(size(df_jl)[1]) × $(size(df_jl)[2]) | Pandas v"$(pd.__version__)" | Polars v"$(pl.__version__)" | Julia $(VERSION) | (median rel. Pandas) |
-| :-------: | :----: | :----: | :---: | :---: |
-| CSV Ingestion | $(r(median(b_i_1.times)*1e-9)) sec | $(r(median(b_i_2.times)*1e-9)) sec | $(r(median(b_i_3.times)*1e-9)) sec | Julia $(r(median(b_i_1.times)/median(b_i_3.times)))x, Polars $(r(median(b_i_1.times)/median(b_i_2.times)))x faster |
-| Memory Utilization | $(r(m_1)) GB | $(r(m_2)) GB | $(r(m_3)) GB | Julia $(r(m_1/m_3))x, Polars $(r(m_1/m_2))x more memory efficient |
-| CSV Write | $(r(median(b_w_1.times)*1e-9)) sec | $(r(median(b_w_2.times)*1e-9)) sec | $(r(median(b_w_3.times)*1e-9)) sec | Julia $(r(median(b_w_1.times)/median(b_w_3.times)))x, Polars $(r(median(b_w_1.times)/median(b_w_2.times)))x faster |
-| Column Selection | $(r(median(b_c_1.times)*1e-6)) μsec | $(r(median(b_c_2.times)*1e-3)) msec | $(r(median(b_c_3.times)*1e0)) nsec | Julia $(r(median(b_c_1.times)/median(b_c_3.times)))x, Polars $(r(median(b_c_1.times)/median(b_c_2.times)))x faster |
+| DataFrames : $(size(df_jl)[1]) × $(size(df_jl)[2]) | Pandas v"$(pd.__version__)" | Polars v"$(pl.__version__)" | Julia $(VERSION) | Polars speedup (rel. Pandas) | Julia speedup (rel. Pandas) |
+| :-------: | :----: | :----: | :---: | :---: | :---: | 
+| CSV Ingestion | $(r(median(b_i_1.times)*1e-9)) sec | $(r(median(b_i_2.times)*1e-9)) sec | $(r(median(b_i_3.times)*1e-9)) sec | $(r(median(b_i_1.times)/median(b_i_2.times)))x | $(r(median(b_i_1.times)/median(b_i_3.times)))x |
+| Memory Utilization | $(r(m_1)) GB | $(r(m_2)) GB | $(r(m_3)) GB | $(r(m_1/m_2))x | $(r(m_1/m_3))x |
+| CSV Write | $(r(median(b_w_1.times)*1e-9)) sec | $(r(median(b_w_2.times)*1e-9)) sec | $(r(median(b_w_3.times)*1e-9)) sec | $(r(median(b_w_1.times)/median(b_w_2.times)))x | $(r(median(b_w_1.times)/median(b_w_3.times)))x |
+| Column Selection | $(r(median(b_c_1.times)*1e-6)) μsec | $(r(median(b_c_2.times)*1e-3)) msec | $(r(median(b_c_3.times)*1e0)) nsec | $(r(median(b_c_1.times)/median(b_c_2.times)))x | $(r(median(b_c_1.times)/median(b_c_3.times)))x |
 """
 
 # ╔═╡ c32d9e3d-1ac8-48f2-8c9d-d363fecf5336
@@ -639,6 +648,7 @@ version = "17.4.0+0"
 # ╟─b12b2b13-caa1-426f-b80b-08886a10fddb
 # ╠═be640384-0945-11ee-217a-35c78a2884e0
 # ╠═d622c667-c9c1-4fc0-b6e1-1c447a25157b
+# ╠═91a33052-6ccf-4285-a027-66cbc1259f89
 # ╠═a226c07d-9625-41ee-b8f6-a946bd6c50b5
 # ╟─35aea64c-3805-413a-bdf0-f8e66cf9ef11
 # ╠═8b91d461-e46c-47a0-9e91-d65edc2d70eb
