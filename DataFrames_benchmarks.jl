@@ -4,20 +4,14 @@
 using Markdown
 using InteractiveUtils
 
-# ╔═╡ be640384-0945-11ee-217a-35c78a2884e0
-using PyCall , PlutoUI, DataFrames, CSV, BenchmarkTools, JSON
+# ╔═╡ 91a33052-6ccf-4285-a027-66cbc1259f89
+using PyCall , PlutoUI, DataFrames, CSV, BenchmarkTools
 
 # ╔═╡ b12b2b13-caa1-426f-b80b-08886a10fddb
-md""" ## Pandas, Polars, Julia DataFrame Benchmarks
+md""" ## DataFrame Library Benchmarks: Pandas, Polars, Julia 
 """
 
-# ╔═╡ d622c667-c9c1-4fc0-b6e1-1c447a25157b
-md"""  The motivation for this set of benchmarks was derived from an initial assessment by Awi Chawla demonstrating the performance gains of Polars over Pandas.  As Julia has become my go to for is the language of the future
-
-[data](https://drive.google.com/file/d/1sSugZwVWCSsep0-4Xi7peXCd5dvglm4a/view?usp=sharing)
-"""
-
-# ╔═╡ 91a33052-6ccf-4285-a027-66cbc1259f89
+# ╔═╡ 095e81e1-4901-439b-b522-3f02cd59cb86
 html""" <style> main {
      margin: 0 auto;
      max-width: 1250px;
@@ -44,6 +38,12 @@ begin
 	println("Julia version:\t", VERSION)
 end
 
+# ╔═╡ ba4428c5-5929-49de-b57b-9319d95535c3
+begin
+	r(x) = round(x; digits=1) 
+	r3(x) = round(x; digits=3) 
+end
+
 # ╔═╡ f3a042c4-86a9-4aac-9409-e3f59d1bd502
 md""" ### Ingest CSV File
 """
@@ -63,6 +63,24 @@ begin
 	df_pl = pl.read_csv("dataset.csv")
 	df_jl = CSV.read("dataset.csv", DataFrame)
 end
+
+# ╔═╡ d622c667-c9c1-4fc0-b6e1-1c447a25157b
+md"""  
+[Julia](https://julialang.org/) is rapidly on pace to become the open-source de-facto application for scientific programming.  This set of  benchmarks demonstrates the performance advantages, in many but not all cases, of using Julia over other popular DataFrame libraries [Pandas](https://pandas.pydata.org/docs/index.html) and _lightning-fast_ [Polars](https://www.pola.rs/).  
+
+
+To evaluate each of the DataFrame libraries, a large record consisting of [Employee Salary data](https://drive.google.com/file/d/1XqzFjBSj4HTOZK62lx1i134pZzvhH0nd/view?usp=sharing) (_source_: [A. Chawla](https://github.com/ChawlaAvi/Daily-Dose-of-Data-Science/blob/main/Pandas/Polars-vs-Pandas.ipynb)) with over 4 million rows (and $(size(df_jl)[2]) columns) was utilized. 
+
+The following processes were exercised and benchmarked using [BenchmarkTools.jl](https://github.com/JuliaCI/BenchmarkTools.jl)
+
+- CSV file ingestion
+- Writing the CSV file (to disk)
+- Memory allocation 
+- Selecting DataFrame columns
+- Filtering the DataFrame
+- Sorting the DataFrame
+- Grouping the DataFrame
+"""
 
 # ╔═╡ b9ebe150-20d1-403d-866b-7aa9426682dd
 md""" ### Write to CSV File
@@ -150,24 +168,21 @@ b_s_3 = @benchmark sort!(df_jl, :Employee_Salary, rev=false)
 
 # ╔═╡ 29331c71-bf08-4135-a0e2-74ec2da65ae5
 md""" ## Benchmark Results
-#### median statistic
+The following table provides the aggregated _median statistics_ for the data processing tasks considered.
 """
-
-# ╔═╡ 5b430d7d-42ec-407b-a7d3-2a65cccc2db7
-r(x) = round(x; digits=1) 
 
 # ╔═╡ 5ef2b97b-4ff3-4d3e-8737-a089c58c304c
 md"""
-| DataFrames : $(size(df_jl)[1]) × $(size(df_jl)[2]) | Pandas v"$(pd.__version__)" | Polars v"$(pl.__version__)" | Julia $(VERSION) | Polars speedup (rel. Pandas) | Julia speedup (rel. Pandas) |
+| DataFrame $-$ size: $(size(df_jl)[1]) × $(size(df_jl)[2]) | _Pandas_ v"$(pd.__version__)" | _Polars_ v"$(pl.__version__)" | _Julia_ $(VERSION) | _Polars_ perf. rel. _Pandas_ | _Julia_ perf. rel. _Pandas_ |
 | :-------: | :----: | :----: | :---: | :---: | :---: | 
-| CSV Ingestion | $(r(median(b_i_1.times)*1e-9)) sec | $(r(median(b_i_2.times)*1e-9)) sec | $(r(median(b_i_3.times)*1e-9)) sec | $(r(median(b_i_1.times)/median(b_i_2.times)))x | $(r(median(b_i_1.times)/median(b_i_3.times)))x |
-| Memory Utilization | $(r(m_1)) GB | $(r(m_2)) GB | $(r(m_3)) GB | $(r(m_1/m_2))x | $(r(m_1/m_3))x |
-| CSV Write | $(r(median(b_w_1.times)*1e-9)) sec | $(r(median(b_w_2.times)*1e-9)) sec | $(r(median(b_w_3.times)*1e-9)) sec | $(r(median(b_w_1.times)/median(b_w_2.times)))x | $(r(median(b_w_1.times)/median(b_w_3.times)))x |
-| Column Selection | $(r(median(b_c_1.times)*1e-6)) μsec | $(r(median(b_c_2.times)*1e-3)) msec | $(r(median(b_c_3.times)*1e0)) nsec | $(r(median(b_c_1.times)/median(b_c_2.times)))x | $(r(median(b_c_1.times)/median(b_c_3.times)))x |
+| CSV Ingestion | $(r(median(b_i_1.times)*1e-9)) sec | $(r(median(b_i_2.times)*1e-9)) sec | $(r(median(b_i_3.times)*1e-9)) sec | $(r(median(b_i_1.times)/median(b_i_2.times))) 🔥 | $(r(median(b_i_1.times)/median(b_i_3.times))) |
+| Memory Utilization | $(r(m_1)) GB | $(r(m_2)) GB | $(r(m_3)) GB | $(r(m_1/m_2)) | $(r(m_1/m_3)) 🔥 |
+| CSV Write | $(r(median(b_w_1.times)*1e-9)) sec | $(r(median(b_w_2.times)*1e-9)) sec | $(r(median(b_w_3.times)*1e-9)) sec | $(r(median(b_w_1.times)/median(b_w_2.times))) 🔥| $(r(median(b_w_1.times)/median(b_w_3.times))) |
+| Column Selection | $(r(median(b_c_1.times)*1e-3)) μsec | $(r3(median(b_c_2.times)*1e-3)) μsec | $(r3(median(b_c_3.times)*1e-3)) μsec | $(r(median(b_c_1.times)/median(b_c_2.times))) | $(r(median(b_c_1.times)/median(b_c_3.times))) 🔥 |
+| Filtering | $(r(median(b_f_1.times)*1e-6)) msec | $(r(median(b_f_2.times)*1e-6)) msec | $(r(median(b_f_3.times)*1e-6)) msec | $(r(median(b_f_1.times)/median(b_f_2.times))) | $(r(median(b_f_1.times)/median(b_f_3.times))) 🔥 |
+| Grouping | $(r(median(b_g_1.times)*1e-6)) msec | $(r(median(b_g_2.times)*1e-6)) msec | $(r(median(b_g_3.times)*1e-6)) msec | $(r(median(b_g_1.times)/median(b_g_2.times))) 🔥 | $(r(median(b_g_1.times)/median(b_g_3.times))) |
+| Sorting | $(r(median(b_s_1.times)*1e-6)) msec | $(r(median(b_s_2.times)*1e-6)) msec | $(r(median(b_s_3.times)*1e-6)) msec | $(r(median(b_s_1.times)/median(b_s_2.times))) | $(r(median(b_s_1.times)/median(b_s_3.times))) 🔥 |
 """
-
-# ╔═╡ c32d9e3d-1ac8-48f2-8c9d-d363fecf5336
-b_c_3.times
 
 # ╔═╡ 00000000-0000-0000-0000-000000000001
 PLUTO_PROJECT_TOML_CONTENTS = """
@@ -175,7 +190,6 @@ PLUTO_PROJECT_TOML_CONTENTS = """
 BenchmarkTools = "6e4b80f9-dd63-53aa-95a3-0cdb28fa8baf"
 CSV = "336ed68f-0bac-5ca0-87d4-7b16caf5d00b"
 DataFrames = "a93c6f00-e57d-5684-b7b6-d8193f3e46c0"
-JSON = "682c06a0-de6a-54ab-a142-c8b1cf79cde6"
 PlutoUI = "7f904dfe-b85e-4ff6-b463-dae2292396a8"
 PyCall = "438e738f-606a-5dbb-bf0a-cddfbfd45ab0"
 
@@ -183,9 +197,8 @@ PyCall = "438e738f-606a-5dbb-bf0a-cddfbfd45ab0"
 BenchmarkTools = "~1.3.2"
 CSV = "~0.10.11"
 DataFrames = "~1.5.0"
-JSON = "~0.21.4"
 PlutoUI = "~0.7.51"
-PyCall = "~1.95.1"
+PyCall = "~1.95.2"
 """
 
 # ╔═╡ 00000000-0000-0000-0000-000000000002
@@ -194,7 +207,7 @@ PLUTO_MANIFEST_TOML_CONTENTS = """
 
 julia_version = "1.9.1"
 manifest_format = "2.0"
-project_hash = "a35d0bb880e62386f7c0bec132401cbc627c6fdd"
+project_hash = "f17fc61a1a629111468d603beb46adccaad0eab1"
 
 [[deps.AbstractPlutoDingetjes]]
 deps = ["Pkg"]
@@ -445,9 +458,9 @@ version = "1.6.0"
 
 [[deps.Parsers]]
 deps = ["Dates", "PrecompileTools", "UUIDs"]
-git-tree-sha1 = "b32107a634205cdcc64e2a3070c3eb0d56d54181"
+git-tree-sha1 = "5a6ab2f64388fd1175effdf73fe5933ef1e0bac0"
 uuid = "69de0a69-1ddd-5017-9359-2bf0b02dc9f0"
-version = "2.6.0"
+version = "2.7.0"
 
 [[deps.Pkg]]
 deps = ["Artifacts", "Dates", "Downloads", "FileWatching", "LibGit2", "Libdl", "Logging", "Markdown", "Printf", "REPL", "Random", "SHA", "Serialization", "TOML", "Tar", "UUIDs", "p7zip_jll"]
@@ -494,9 +507,9 @@ uuid = "9abbd945-dff8-562f-b5e8-e1ebf5ef1b79"
 
 [[deps.PyCall]]
 deps = ["Conda", "Dates", "Libdl", "LinearAlgebra", "MacroTools", "Serialization", "VersionParsing"]
-git-tree-sha1 = "62f417f6ad727987c755549e9cd88c46578da562"
+git-tree-sha1 = "08c74e61c63bf63530c03cde3fe59586fcae8941"
 uuid = "438e738f-606a-5dbb-bf0a-cddfbfd45ab0"
-version = "1.95.1"
+version = "1.95.2"
 
 [[deps.REPL]]
 deps = ["InteractiveUtils", "Markdown", "Sockets", "Unicode"]
@@ -535,9 +548,9 @@ uuid = "6462fe0b-24de-5631-8697-dd941f90decc"
 
 [[deps.SortingAlgorithms]]
 deps = ["DataStructures"]
-git-tree-sha1 = "a4ada03f999bd01b3a25dcaa30b2d929fe537e00"
+git-tree-sha1 = "c60ec5c62180f27efea3ba2908480f8055e17cee"
 uuid = "a2af1166-a08f-5f64-846c-94a0d3cef48c"
-version = "1.1.0"
+version = "1.1.1"
 
 [[deps.SparseArrays]]
 deps = ["Libdl", "LinearAlgebra", "Random", "Serialization", "SuiteSparse_jll"]
@@ -646,12 +659,13 @@ version = "17.4.0+0"
 
 # ╔═╡ Cell order:
 # ╟─b12b2b13-caa1-426f-b80b-08886a10fddb
-# ╠═be640384-0945-11ee-217a-35c78a2884e0
-# ╠═d622c667-c9c1-4fc0-b6e1-1c447a25157b
+# ╟─095e81e1-4901-439b-b522-3f02cd59cb86
+# ╟─d622c667-c9c1-4fc0-b6e1-1c447a25157b
 # ╠═91a33052-6ccf-4285-a027-66cbc1259f89
-# ╠═a226c07d-9625-41ee-b8f6-a946bd6c50b5
+# ╟─a226c07d-9625-41ee-b8f6-a946bd6c50b5
 # ╟─35aea64c-3805-413a-bdf0-f8e66cf9ef11
-# ╠═8b91d461-e46c-47a0-9e91-d65edc2d70eb
+# ╟─8b91d461-e46c-47a0-9e91-d65edc2d70eb
+# ╟─ba4428c5-5929-49de-b57b-9319d95535c3
 # ╟─f3a042c4-86a9-4aac-9409-e3f59d1bd502
 # ╠═8360e30d-9775-43f8-9f3d-ae637f26146d
 # ╠═be981e6f-77bb-4ea5-ad8b-df2679a02b9a
@@ -683,8 +697,6 @@ version = "17.4.0+0"
 # ╠═286f2c5f-22d0-4dd1-acc3-0d005c1be634
 # ╠═ef3942fa-214f-4527-ab65-6bec0df79403
 # ╟─29331c71-bf08-4135-a0e2-74ec2da65ae5
-# ╠═5ef2b97b-4ff3-4d3e-8737-a089c58c304c
-# ╠═5b430d7d-42ec-407b-a7d3-2a65cccc2db7
-# ╠═c32d9e3d-1ac8-48f2-8c9d-d363fecf5336
+# ╟─5ef2b97b-4ff3-4d3e-8737-a089c58c304c
 # ╟─00000000-0000-0000-0000-000000000001
 # ╟─00000000-0000-0000-0000-000000000002
